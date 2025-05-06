@@ -1,0 +1,497 @@
+---
+title: "Who's gonna churn? "
+subtitle: 'An overview for predict churning customers in an unbalanced dataset'
+author: "Carmine Minichini"
+output:
+    html_document:
+        code_folding: hide
+        number_sections: TRUE
+        toc: TRUE
+        fig_caption: true
+        fig_width: 7
+        fig_height: 4.5
+        theme : flatly
+        highlight: espresso
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, 
+                      error=FALSE, warning=FALSE,
+                      message=FALSE, fig.align = 'default',out.width="90%")
+```
+
+# Preparation {.tabset .tabset-fade .tabset-pills}
+
+After loaded dataset we define some helper functions to train Extreme gradient boosting:
+
+## Libraries
+
+```{r}
+library(tidyverse) # data manipulation
+library(caret) # ml library
+library(xgboost) # ml library
+library(MLmetrics) # score metrics 
+library(pROC) # ROC Curve metric
+#library(Ckmeans.1d.dp) # importance matrix cluster
+library(ggplot2)     # to plot
+library(gridExtra)   # to grid plot
+library(grid) # to grid plot
+library(Rtsne) # TSNE PLOT
+library(factoextra)
+library(ggpubr)
+```
+
+## Data reader
+
+```{r}
+df <- read.csv('BankChurners.csv',stringsAsFactors = T)
+# delete naive bayes columns
+data <- df[,2:21]
+rm(df)
+```
+
+## Gridsearching Function
+
+```{r}
+####################################
+gridsearch <- function(data)
+{
+  # prendi la colonna target
+  target_column <- data$Attrition_Flag
+  # prendi tutte le colonne eccetto il target
+  data <- data %>% select(-Attrition_Flag)
+  # one hot encoding sulle variabili categoriche
+  dmy <- dummyVars(" ~ .", data = data)
+  train_data <- data.frame(predict(dmy, newdata = data))
+  # ripristina il dataframe originario
+  data <- cbind(train_data,target_column)
+  names(data)[38] <- 'Attrition_Flag'
+  
+  cat(paste(" ",
+            "Data correctly encoded.",
+            " ",
+            "___________________________________________________________________",
+            "",
+            "GRID SEARCH RESULTS",
+            "___________________________________________________________________",
+            sep="\n"))
+  
+  # split dataframe in train part
+  trainIndex <- createDataPartition(data$Attrition_Flag,p=0.75,list=FALSE)
+  data_train <- data[trainIndex,]
+  data_test <-  data[-trainIndex,]
+  
+  # relevel target column in train/test
+  data_train <- data_train %>%
+    mutate(Attrition_Flag = ifelse(Attrition_Flag == "Existing Customer",0,1))
+  
+  data_test <- data_test %>%
+    mutate(Attrition_Flag = ifelse(Attrition_Flag == "Existing Customer",0,1))
+  
+  ########################################## GRIDSEARCH
+  grid_train = data_train
+  # factorize target column
+  grid_train$Attrition_Flag = factor(grid_train$Attrition_Flag)
+  # relevel target column for gridsearch
+  levels(grid_train$Attrition_Flag) <- c("X0","X1")
+  
+  # grid parameters
+  xgb_grid_1 = expand.grid(
+    nrounds = 10,
+    eta = seq(2,10,by=1)/10,
+    max_depth = c(6, 8, 10),
+    gamma = 0,
+    subsample = c(0.5, 0.75, 1),
+    min_child_weight = c(1,2) ,
+    colsample_bytree = c(0.3,0.5)
+  )
+  
+  # pack the training control parameters
+  xgb_trcontrol_1 = trainControl(
+    method = "cv",
+    number = 2,
+    search='grid',
+    verboseIter = FALSE,
+    returnData = TRUE,
+    returnResamp = "all", # save losses across all models
+    classProbs = TRUE, # set to TRUE for AUC to be computed
+    summaryFunction = prSummary, # probability summary(AUC)
+    allowParallel = TRUE,
+  )
+  
+  xgb_train_1 = train(
+    x = as.matrix(grid_train %>% select(-Attrition_Flag)),
+    y = factor(grid_train$Attrition_Flag),
+    trControl = xgb_trcontrol_1,
+    tuneGrid = xgb_grid_1,
+    method = "xgbTree",
+    metric= 'Recall'
+  )
+  
+  best_tune <- xgb_train_1$bestTune
+  
+  results <- xgb_train_1$results
+  
+  trained_model <- xgb_train_1
+  
+  cat(paste("",
+            paste('With a recall of:',results[rownames(best_tune),"Recall"]),
+            'Best GRIDSEARCH Hyperparameters:',
+            '',
+            sep='\n\n'))
+  
+  rownames(best_tune) <- 'Value'
+  print(t(best_tune))
+  
+  # out dataframe
+  out <- list(gridresults = results,
+              best_tune = best_tune,
+              train_data = data_train,
+              test_data = data_test
+              )
+  return(out)
+}
+
+```
+
+## Classifier Function
+
+```{r}
+###################################
+xgb_train <- function(train_data,test_data,best_tune)
+{
+  # best hyperparameters from gridsearch
+  best_tune <- best_tune
+  
+  #train
+  data_train <- train_data %>% select(-Attrition_Flag)
+  label_train <- train_data$Attrition_Flag
+  # test
+  data_test <- test_data %>% select(-Attrition_Flag)
+  label_test <- test_data$Attrition_Flag
+  
+  # as matrix
+  data_train <- as.matrix(data_train)
+  data_test <- as.matrix(data_test)
+  
+  # as numeric
+  label_train <- as.numeric(label_train)
+  label_test <- as.numeric(label_test)
+  
+  cat(paste("",
+            paste("Number of observations in train set:",nrow(data_train)),
+            paste("Number of observations in test set:",nrow(data_test)),
+            "___________________________________________________________________",
+            "XGB TRAIN",
+            "___________________________________________________________________",
+            "Training XGB on train data:",
+            " ",
+            sep='\n\n'))
+  
+  # XGB matrix
+  dtrain <-  xgb.DMatrix(data_train,label=label_train)
+  dtest <- xgb.DMatrix(data_test,label=label_test)
+  
+  ########## XGB MODEL
+  model <- xgboost(data= dtrain, 
+                   objective = "binary:logistic",
+                   # paramaters
+                   max_depth = best_tune$max_depth,
+                   nrounds=100,
+                   colsample_bytree = best_tune$colsample_bytree,
+                   gamma = best_tune$gamma,
+                   min_child_weight = best_tune$min_child_weight,
+                   eta = best_tune$eta, 
+                   subsample = best_tune$subsample,
+                   print_every_n = 20,
+                   scale_pos_weight=5.22,# negative/positive
+                   max_delta_step=1,
+                   eval_metric='aucpr',
+                   # others
+                   verbose=1,
+                   nthread = 4)
+  
+  cv  <-  xgb.cv(data = dtrain, 
+                 nround = 50, 
+                 print_every_n= 10,
+                 verbose = TRUE,
+                 metrics = list("aucpr"),
+                 nfold = 5, 
+                 nthread = 4,
+                 objective = "binary:logistic",
+                 prediction=F)
+  
+  
+  out <- list(data_train = data_train,
+              dtest = dtest,
+              label_test = label_test,
+              model = model)
+ return(out)
+}
+
+```
+
+## Compute & plot metrics Function
+
+```{r}
+##################################
+metrics <- function(data_train,dtest,label_test,model)
+{
+  # read data
+  data_train <- data_train
+  
+  #make prediction
+  pred <- predict(model,dtest)
+  prediction <- as.numeric(pred > 0.5)
+  
+  #confusion matrix
+  cm <- confusionMatrix(factor(prediction),factor(label_test),positive="1")
+  
+  # confusion matrix as dataframe
+  cm_d <- as.data.frame(cm$table)
+  # confusion matrix statistics as data.frame
+  cm_st <-data.frame(cm$byClass)
+  # round the values
+  cm_st <- round(cm_st,2)
+  colnames(cm_st) <- ('Statistics')
+  
+  # here we also have the rounded percentage values
+  cm_p <- as.data.frame(prop.table(cm$table))
+  cm_d$Perc <- round(cm_p$Freq*100,2)
+  
+  # plotting the matrix
+  cm_d_p <- ggplot(data = cm_d, aes(x = Prediction , y =  Reference, fill = Freq))+
+    geom_tile() +
+    geom_text(aes(label = paste("",Freq,":",Perc,"%")), color = 'white', size = 3) +
+    theme_light() +
+    scale_fill_gradient(low = "#3C3838", high = "#338076") + 
+    scale_x_discrete(position = "top") +
+    guides(fill=FALSE) 
+  
+  # plotting the stats
+  cm_st_p <-  tableGrob(cm_st)
+  
+  # all together
+  conf_mat = grid.arrange(cm_d_p, cm_st_p,nrow = 1, ncol = 2, 
+                          top=textGrob("Confusion Matrix and Statistics",
+                                       gp=gpar(fontsize=20,font=1)))
+  
+  ####### Roc Curve
+  roc.curve = roc(response = label_test,
+                  predictor = prediction,
+                  levels=c(0, 1),quiet = T) 
+  
+  plot_roc = plot(roc.curve,main="ROC Curve",col="darkgreen")
+  plot_roc
+  
+  ########## Features importance
+  importance_matrix <- xgb.importance(colnames(data_train), model = model)
+  xgb.plot.importance(importance_matrix,
+                      top_n=10,
+                      main='Features Importance',
+                      measure = 'Frequency')
+  
+  out = list(confusion_matrix = cm,
+             importance = importance_matrix)
+  
+  return(out)
+}
+```
+
+## Main Function
+
+```{r}
+##################################
+main <- function(data)
+{
+  set.seed(123)
+  gridsearch_results <- gridsearch(data)
+  
+  # RESULTS FROM GRIDSEARCH FUNCTION
+  best_tune <- gridsearch_results$best_tune
+  # train & test
+  train_data <- gridsearch_results$train_data
+  test_data <- gridsearch_results$test_data
+
+  ######################################## TRAIN XGB
+  xgb_train_results <- xgb_train(train_data = train_data,
+                                 test_data = test_data,
+                                 best_tune = best_tune)
+  ########################################
+  
+  # RESULTS FROM TRAINED XGB
+  # test dataframe
+  dtest <- xgb_train_results$dtest
+  label_test <- xgb_train_results$label_test
+  #train dataframe for columns names
+  data_train <- xgb_train_results$data_train
+  model <- xgb_train_results$model
+
+  # METRICS FUNCTION
+  met <- metrics(data_train = data_train,
+          dtest = dtest,
+          label_test = label_test,
+          model = model)
+}
+```
+
+# EDA to understand churning features {.tabset .tabset-fade .tabset-pills}
+
+In order to avoid useless plots we will focus our data exploration on features that contribute the most to the target feature:
+
+## What influence most churning?
+
+```{r}
+# mutates
+data_corr <- data %>% mutate_if(is.factor,as.numeric)
+# compute correlation 
+correlation= cor(data_corr)
+# correlation as data.frame
+target_corr= as.data.frame(correlation[,1])
+# correlation column name
+colnames(target_corr) <-'Correlation'
+# sort dataframe
+target_corr <- target_corr %>% arrange(desc(Correlation))
+# exclude target
+target_corr <- target_corr %>% filter(Correlation<1) 
+# round
+target_corr <- round(target_corr,2)
+
+# PLOT CORRELATION
+target_corr %>% arrange(desc(Correlation)) %>%
+  ggplot(aes(x=Correlation,
+             y=reorder(rownames(target_corr),Correlation),
+             fill=Correlation)) +
+  geom_col(color='black') + labs(title='Target Correlation',y='') +
+  theme_classic() +
+  theme(legend.position = 'none')
+
+```
+
+## Which features have dataset's customers?
+
+As discussed before we will take only the first 6 features, as explained by target correlation plot, to see which are the relevant differences between customers:
+
+Like we expected transactions amount & counts is the most relevant features that contribute to determine who's gonna churn.
+
+Lower transactions may signify a low interest on keeping the account on.
+
+```{r}
+# Transaction Count
+p2 <- data %>% ggplot(aes(x=Total_Trans_Ct,fill=Attrition_Flag)) + 
+  geom_density(alpha=0.7) +
+  scale_fill_manual(values= c('#3C3838','#338076'),name='') +
+  theme_classic() +
+  labs(title='Total Transaction Count (Last 12 months) by flag') +
+  theme(legend.position='bottom')
+
+# Total Revolving Balance on the Credit Card
+p3 <- data %>% ggplot(aes(x=Total_Revolving_Bal,fill=Attrition_Flag)) + 
+  geom_density(alpha=0.7) +
+  scale_fill_manual(values= c('#3C3838','#338076'),name='') +
+  theme_classic() +
+  labs(title='Total Revolving Balance on the Credit Card by flag') +
+  theme(legend.position='bottom')
+
+# Average Card Utilizazion Ratio 
+p4 <- data %>% ggplot(aes(x=Avg_Utilization_Ratio,fill=Attrition_Flag)) + 
+  geom_density(alpha=0.7) +
+  scale_fill_manual(values= c('#3C3838','#338076'),name='') +
+  theme_classic() +
+  labs(title='Average Card Utilization Ratio by flag') +
+  theme(legend.position='bottom')
+
+# Total transations amounts
+p5 <- data %>% ggplot(aes(x=Total_Trans_Amt,fill=Attrition_Flag)) + 
+  geom_density(alpha=0.7) +
+  scale_fill_manual(values= c('#3C3838','#338076'),name='') +
+  theme_classic() +
+  labs(title='Total transations amounts by flag') +
+  theme(legend.position='bottom')
+
+# Transations amounts versus counts
+p6 <- data %>% ggplot(aes(x=Total_Trans_Amt,Total_Trans_Ct,color=Attrition_Flag)) +
+  geom_point() +
+  geom_smooth() +
+  labs(x='Total transations amount',y='Total transation count',
+       title='Transations amount versus counts') +
+  theme_classic() +
+  scale_color_manual(values= c('#3C3838','#338076'),name='') +
+  theme(legend.position = 'bottom')
+
+
+grid.arrange(p2,p3,ncol=1,nrow=2)
+p4
+grid.arrange(p5,p6,ncol=1,nrow=2)
+
+```
+
+## Further EDA - Can we cluster customers?
+
+Clearly there are differences between the two customers type. The main difference involve the amount of transactions. Now can we split furtherly the differences?
+
+We can try clustering the data and see if there are identifiable patterns in dataset that can help us to split better churning from not churning customers:
+
+**Clustering dataset in 6 dimensions we can see that the 4th dimension covers about 50 % of total churning customers, this could mean that the 4th dimension of clustering contains most of the features that we need to know about them. Instead the two dimensions of principal component analysis explain about 27 % of total variance in data**
+
+```{r}
+# seed
+set.seed(2)
+# CLUSTERING USING KMEANS
+res.km <- kmeans(scale(data_corr[, -1]), 6, nstart = 25)
+# DIMENSION REDUCTION USING PCA
+res.pca <- prcomp(data_corr[, -1],  scale = TRUE)
+
+# Coordinates 
+ind.coord <- as.data.frame(get_pca_ind(res.pca)$coord)
+
+# Add clusters obtained using the K-means algorithm
+ind.coord$cluster <- factor(res.km$cluster)
+
+# Add target from original dataset
+ind.coord$target <- data$Attrition_Flag
+
+pca_cluster <- ind.coord %>% group_by(target,cluster) %>% count() %>% as.data.frame()
+
+percentage_total= pca_cluster %>% group_by(target) %>% summarise(per_tot=n/sum(n)*100) 
+
+pca_cluster <- cbind(pca_cluster,'%'=round(percentage_total$per_tot,1))
+
+c2 <- tableGrob(pca_cluster)
+
+
+# Percentage of variance explained by dimensions
+eigenvalue <- round(get_eigenvalue(res.pca), 1)
+variance.percent <- eigenvalue$variance.percent
+
+c3 <- ggscatter(
+  ind.coord, x = "Dim.1", y = "Dim.2", 
+  color = "cluster", palette = "npg", ellipse = TRUE, ellipse.type = "convex",
+  size = 1.5,  legend = "right", ggtheme = theme_bw(),
+  xlab = paste0("Dim 1 (", variance.percent[1], "% )" ),
+  ylab = paste0("Dim 2 (", variance.percent[2], "% )" )
+) +
+  stat_mean(aes(color = cluster), size = 4) +
+  theme_classic() +
+  theme(legend.position='top') 
+  
+
+grid.arrange(c2,c3,ncol=2,
+             top=textGrob("Kmeans cluster and PCA",
+                                       gp=gpar(fontsize=18,font=1)))
+
+```
+
+# Modelling {.tabset .tabset-fade .tabset-pills}
+
+There are a couple of valid ways to handle with an unbalanced dataset, some of those involve upsampling or undersampling datasets. A correct way (often not considered) is to use scale_pos_weight to easily handle with unbalanced target class in binary classification.
+
+scale_pos_weight is defined as the ratio between: (negative cases)/(positive cases). In our case the ratio will be of 5.22 (\# of existing customers/ \# of attrited customers).
+
+After splitting the original dataset in train/test part in order to avoid overfitting, we will gridsearch XGB hyperparameters, after, we will train the model by choosing the right evaluation metric (AUC probabilities for recall & precision).
+
+Please note that we have labelled Attrited customers with "1" and Existing Customers as "0"
+
+```{r}
+main(data)
+```
