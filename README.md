@@ -1,1 +1,1 @@
-*Notebooks, studies and experiments on various fields with R*
+*Notebooks, studies and experiments on various fields in R*

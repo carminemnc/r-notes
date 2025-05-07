@@ -1,0 +1,128 @@
+---
+title: "Inferenza causale pt.1"
+author: "Carmine Minichini"
+description: "Il dilemma dell'uovo e della gallina"
+date: "2024-10-28"
+categories: [casual inference, R]
+image: loop.gif
+code-fold: true
+knitr:
+  opts_knit:
+    root.dir: '../causalwiz'
+---
+
+```{r, include = FALSE}
+source("main.R")
+```
+
+## HTE I: Trattamento binario
+
+Nella parte precedente, abbiamo imparato a stimare l'effetto medio del trattamento sull'intera popolazione. Tuttavia, la media può oscurare dettagli importanti su come individui diversi reagiscono al trattamento. In questo capitolo, impareremo a stimare l'effetto di trattamento medio condizionale (CATE), definito come:
+
+$$\tau(x) := E[Y_i(1) - Y_i(0) | X_i = x]$$ {#eq-cate}
+
+Spesso il **CATE** è troppo generale per essere immediatamente utile, specialmente quando le covariate osservate sono ad alta dimensionalità. Può essere difficile stimarlo in modo affidabile senza fare forti ipotesi di modellazione, e difficile riassumerlo in modo utile dopo la stima. In tali situazioni, cercheremo invece di stimare medie degli effetti di trattamento per gruppi più semplici:
+
+$$E[Y_i(1) - Y_i(0) | G_i = g]$$
+
+dove $G_i$ indica i sottogruppi di interesse. Qui imparerai come stimare e testare ipotesi su sottogruppi predefiniti, e anche come scoprire sottogruppi di interesse dai dati.
+
+Continueremo a utilizzare la versione abbreviata dell'indagine General Social Survey (GSS) introdotta nel capitolo precedente. In questo dataset, gli individui sono stati assegnati casualmente al trattamento o al controllo con uguale probabilità, quindi siamo in un contesto di sperimentazione randomizzata. Tuttavia, molte delle tecniche e del codice mostrati di seguito dovrebbero funzionare anche in un contesto osservazionale, purché siano soddisfatte le ipotesi di ignorabilità e sovrapposizione (queste ipotesi sono state definite nel capitolo precedente).
+
+4.1 Ipotesi pre-specificate
+
+Inizieremo imparando come testare ipotesi nulle pre-specificate della forma:
+
+$$H_0: E[Y(1) - Y(0) | G_i = 1] = E[Y(1) - Y(0) | G_i = 0]$$
+
+Ovvero, che l'effetto del trattamento è lo stesso indipendentemente dall'appartenenza a un certo gruppo $G_i$. È importante notare che per ora assumeremo che il gruppo $G_i$ sia stato pre-specificato - è stato deciso prima di guardare i dati.
+
+In un contesto di sperimentazione randomizzata, se sia il trattamento $W_i$ che l'appartenenza al gruppo $G_i$ sono binari, possiamo scrivere:
+
+$$E[Y_i(W_i) | G_i] = E[Y_i | W_i, G_i] = \beta_0 + \beta_w W_i + \beta_g G_i + \beta_{wg} W_i G_i$$
+
+Questa decomposizione è vera senza perdita di generalità quando $W_i$ e $G_i$ sono binari.
+
+Riscrivendo l'ipotesi nulla (4.3) in termini della decomposizione (4.5), vediamo che si riduce a un test sul coefficiente dell'interazione: $\beta_{wg} = 0$. Ecco un esempio che testa se l'effetto del trattamento è lo stesso per individui "conservatori" (polviews \< 4) e "liberali" (polviews ≥ 4).
+
+# Valido solo in contesti randomizzati
+
+fmla \<- formula(paste(outcome, ' \~ ', treatment, '\*', group)) ols \<- lm(fmla, data=data) coeftest(ols, vcov=vcovHC(ols, type='HC2'))
+
+Interpretando i risultati, il coefficiente $\beta_{wg}$ è indicato da w:conservativeTRUE. Possiamo rilevare una differenza nell'effetto del trattamento per individui conservatori rispetto a quelli liberali? Per quale gruppo l'effetto è maggiore?
+
+A volte ci sono molti sottogruppi, portando a molteplici ipotesi come:
+
+$$H_0: E[Y(1) - Y(0) | G_i = 1] = E[Y(1) - Y(0) | G_i = g]$$
+
+per molti valori di $g$. In questo caso, dobbiamo correggere per il fatto che stiamo testando ipotesi multiple, altrimenti avremo molti falsi positivi. La correzione di Bonferroni è un metodo comune per affrontare il problema dei test di ipotesi multiple, anche se spesso è troppo conservativo per essere utile.
+
+Un'altra opzione è utilizzare la correzione di Romano-Wolf, basata su Romano e Wolf (2005, Econometrica). Questo procedimento basato sul bootstrap tiene conto della struttura di dipendenza sottostante delle statistiche di test in un modo che migliora la potenza.
+
+# Valido solo in contesti randomizzati
+
+fmla \<- formula(paste(outcome, ' \~ ', treatment, '\*', 'factor(', group, ')')) ols \<- lm(fmla, data=data) ols.res \<- coeftest(ols, vcov=vcovHC(ols, type='HC2')) interact \<- which(sapply(names(coef(ols)), function(x) grepl("w:", x))) romano_wolf_correction(ols.res\[interact, 4\], t.boot)
+
+Interpretare i risultati. Le p-value corrette per Romano-Wolf mostrano differenze significative nell'effetto del trattamento tra i gruppi?
+
+4.2 Ipotesi guidate dai dati
+
+Talvolta può essere utile utilizzare un approccio "data-driven" per identificare sottogruppi interessanti, piuttosto che affidarsi solo a ipotesi pre-specificate. Una tecnica interessante è l'uso di alberi causali (causal trees), disponibili nel contesto di sperimentazione randomizzata, per scoprire sottogruppi con effetti di trattamento diversi.
+
+L'idea di base è dividere il campione in tre sottoinsiemi (non necessariamente di dimensioni uguali). Il sottoinsieme di splitting viene utilizzato per adattare un albero decisionale il cui obiettivo è massimizzare l'eterogeneità nelle stime degli effetti di trattamento tra le foglie. Il sottoinsieme di stima viene quindi utilizzato per produrre una stima valida dell'effetto di trattamento in ciascuna foglia dell'albero adattato. Infine, un sottoinsieme di test può essere utilizzato per validare le stime dell'albero.
+
+Ecco un esempio di utilizzo della funzione honest.causalTree del pacchetto causalTree:
+
+# Valido solo in contesti di dati randomizzati!
+
+indices \<- split(seq(nrow(data)), sort(seq(nrow(data)) %% 3)) ct.unpruned \<- honest.causalTree( formula=fmla, data=data\[indices$split,],
+  treatment=data[indices$split, treatment\], est_data=data\[indices$est,],
+  est_treatment=data[indices$est, treatment\], minsize=1, HonestSampleSize=length(indices\$est), split.Rule="CT", cv.option="TOT", cp=0, split.Honest=TRUE, cv.Honest=TRUE )
+
+La figura 4.1 mostra l'albero appreso. I valori nelle celle sono l'effetto di trattamento stimato e una stima della frazione della popolazione che rientra in ciascuna foglia, entrambi stimati utilizzando il sottoinsieme di stima.
+
+Interpretare l'albero appreso. Quali caratteristiche descrivono i sottogruppi con il più forte e il più debole effetto di trattamento stimato?
+
+Un'altra tecnica interessante è l'utilizzo della foresta causale (causal forest) del pacchetto grf per ottenere stime del CATE $\tau(X_i)$. Questa tecnica produce anche una misura dell'importanza delle variabili che indica quanto spesso una variabile è stata utilizzata in uno split dell'albero.
+
+# Ottenere le previsioni della foresta causale
+
+tau.hat \<- predict(forest.tau)\$predictions
+
+Sebbene questa distribuzione delle stime del CATE possa sembrare informativa, in realtà deve essere interpretata con cautela. Se l'istogramma è concentrato in un punto, potremmo semplicemente avere poca potenza statistica; se è molto diffuso, potremmo avere problemi di overfitting. Pertanto, non dovresti basare conclusioni sulla semplice ispezione visiva di questa distribuzione.
+
+Una tecnica più affidabile consiste nel dividere il campione in $K$ sottoinsiemi (fold), adattare il modello su $K-1$ fold e quindi classificare le osservazioni non viste in $Q$ gruppi in base alle loro previsioni di CATE. Questo approccio garantisce che le stime utilizzate per classificare ogni osservazione siano indipendenti da quella osservazione. Quindi possiamo studiare le differenze nelle osservazioni in ciascun gruppo di classificazione.
+
+# Valido in contesti randomizzati e osservazionali con ignorabilità e sovrapposizione
+
+num.rankings \<- 5 folds \<- sort(seq(n) %% num.folds) + 1 forest \<- causal_forest(X, Y, W, clusters = folds) tau.hat \<- predict(forest)\$predictions ranking \<- rep(NA, n) for (fold in seq(num.folds)) { tau.hat.quantiles \<- quantile(tau.hat\[folds == fold\], probs = seq(0, 1, by=1/num.rankings)) ranking\[folds == fold\] \<- cut(tau.hat\[folds == fold\], tau.hat.quantiles, include.lowest=TRUE,labels=seq(num.rankings)) }
+
+Quindi possiamo stimare l'effetto di trattamento medio in ciascun gruppo di classificazione:
+
+# Valido solo in contesti randomizzati
+
+fmla \<- paste0(outcome, " \~ 0 + ranking + ranking:", treatment) ols.ate \<- lm(fmla, data=transform(data, ranking=factor(ranking))) ols.ate \<- coeftest(ols.ate, vcov=vcovHC(ols, type='HC2')) interact \<- which(grepl(":", rownames(ols.ate))) ols.ate
+
+# Valido in contesti randomizzati e osservazionali con ignorabilità e sovrapposizione
+
+aipw.scores \<- tau.hat + W / e.hat \* (Y - mu.hat.1) - (1 - W) / (1 - e.hat) \* (Y - mu.hat.0) ols \<- lm(aipw.scores \~ 0 + factor(ranking)) forest.ate \<- coeftest(ols, vcov=vcovHC(ols, "HC2"))
+
+La figura 4.4 mostra i risultati. Interpretare i risultati. Quali gruppi mostrano il più forte e il più debole effetto di trattamento?
+
+4.3 Valutare l'eterogeneità con RATE
+
+Il pacchetto grf fornisce anche la funzione rank_average_treatment_effect che consente di valutare quanto bene le regole di prioritizzazione del trattamento (come le stime del CATE) riescano a distinguere sottopopolazioni con diversi effetti di trattamento, o se ci sia eterogeneità notevole.
+
+L'idea di base è di definire una curva chiamata Targeting Operator Characteristic (TOC) che mostra il beneficio atteso del trattamento per le frazioni più grandi della popolazione, classificate in base a una regola di prioritizzazione $S(X_i)$. L'area sotto questa curva (RATE) fornisce una misura sintetica di quanto la regola di prioritizzazione riesca a catturare l'eterogeneità degli effetti di trattamento.
+
+rate \<- rank_average_treatment_effect(cf.eval, priority.cate) rate
+
+Interpretare i risultati. Il valore stimato di RATE suggerisce la presenza di eterogeneità significativa negli effetti di trattamento?
+
+4.4 Ulteriori letture
+
+Per approfondimenti sui metodi di correzione dei test di ipotesi multipli, si consiglia di consultare l'introduzione di Clarke, Romano e Wolf (2009).
+
+Athey e Wager (2019) mostrano un'applicazione delle foreste causali all'analisi dell'eterogeneità in un contesto con clustering.
+
+Yadlowsky et al. (2021) introducono il concetto di RATE per valutare regole di prioritizzazione del trattamento.
