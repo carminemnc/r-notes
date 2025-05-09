@@ -122,7 +122,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="perchè-linferenza-causale" class="level2">
 <h2 class="anchored" data-anchor-id="perchè-linferenza-causale"><span style="background: linear-gradient(180deg,rgba(255,255,255,0) 50%, rgba(1,132,160,0.5) 50%);">Perchè</span> l’inferenza causale?</h2>
-<p><img src="https://www.vanderschaar-lab.com/wp-content/uploads/2020/12/CausInf.jpg" class="img-fluid" width="1024"></p>
+<p><img src="https://timelinecovers.pro/facebook-cover/download/bright-galaxy-milky-way-stars-facebook-cover.jpg" class="img-fluid"></p>
 <p><strong>L’inferenza causale</strong> è fondamentale perché ci permette di comprendere le relazioni tra cause ed effetti nei fenomeni che osserviamo. A differenza dell’analisi della semplice associazione tra variabili, <em>l’inferenza causale</em> mira a stabilire relazioni causali, ovvero a identificare l’effetto di una variabile (il <span style="background: linear-gradient(180deg,rgba(255,255,255,0) 50%, rgba(1,132,160,0.5) 50%);">trattamento</span>) sulla variabile di interesse (<span style="background: linear-gradient(180deg,rgba(255,255,255,0) 50%, rgba(1,132,160,0.5) 50%);">l’outcome</span>), tenendo conto di tutte le possibili <em>covariate</em>.</p>
 <p>Esempi concreti di applicazione dell’inferenza causale possiamo trovarli in:</p>
 <ul>
@@ -136,17 +136,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># dataset</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"welfare-small.csv"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment: does the the gov't spend too much on "welfare" (1) or "assistance to the poor" (0)</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>treatment <span class="ot">&lt;-</span> <span class="st">"w"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome: 1 for 'yes', 0 for 'no'</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>outcome <span class="ot">&lt;-</span> <span class="st">"y"</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Additional covariates</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"age"</span>, <span class="st">"polviews"</span>, <span class="st">"income"</span>, <span class="st">"educ"</span>, <span class="st">"marital"</span>, <span class="st">"sex"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(welfare_small)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> welfare_small</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Treatment: does the the gov't spend too much on "welfare" (1) or "assistance to the poor" (0)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>treatment <span class="ot">&lt;-</span> <span class="st">"w"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome: 1 for 'yes', 0 for 'no'</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>outcome <span class="ot">&lt;-</span> <span class="st">"y"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Additional covariates</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"age"</span>, <span class="st">"polviews"</span>, <span class="st">"income"</span>, <span class="st">"educ"</span>, <span class="st">"marital"</span>, <span class="st">"sex"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>In questo capitolo utilizzeremo una versiona abbreviata di un dataset pubblico fornito da <a href="https://gss.norc.org/content/dam/gss/get-documentation/pdf/reports/project-reports/GSSProject%20report32.pdf">(Smith,2016)</a></p>
@@ -204,6 +205,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Outcome distribution in randomized controlling trial'</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in age + rnorm(n = sum(W = w), sd = 0.1): longer object length is not a
+multiple of shorter object length</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in polviews + rnorm(n = sum(W = w), sd = 0.1): longer object length is
+not a multiple of shorter object length</code></pre>
+</div>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
 </div>
@@ -220,43 +229,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># in un contesto reale...</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>data_real <span class="ot">&lt;-</span> data</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># defining the group that will be dropped with some high probability</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>grp <span class="ot">&lt;-</span> ((data_real<span class="sc">$</span>w <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;</span>  <span class="co"># if treated AND...</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        (</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>age <span class="sc">&gt;</span> <span class="dv">45</span>) <span class="sc">|</span>     <span class="co"># belongs an older group OR</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>polviews <span class="sc">&lt;</span> <span class="dv">5</span>)   <span class="co"># more conservative</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        )) <span class="sc">|</span> <span class="co"># OR</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        ((data_real<span class="sc">$</span>w <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">&amp;</span>  <span class="co"># if untreated AND...</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        (</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>age <span class="sc">&lt;</span> <span class="dv">45</span>) <span class="sc">|</span>     <span class="co"># belongs a younger group OR</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>polviews <span class="sc">&gt;</span> <span class="dv">4</span>)   <span class="co"># more liberal</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        )) </span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Individuals in the group above have a smaller chance of being kept in the sample</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>prob.keep <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(grp, .<span class="dv">15</span>, .<span class="dv">85</span>)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>keep.idx <span class="ot">&lt;-</span> <span class="fu">as.logical</span>(<span class="fu">rbinom</span>(<span class="at">n=</span><span class="fu">nrow</span>(data_real), <span class="at">prob=</span>prob.keep, <span class="at">size =</span> <span class="dv">1</span>))</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Dropping</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>data_real <span class="ot">&lt;-</span> data_real[keep.idx,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># in un contesto reale...</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>data_real <span class="ot">&lt;-</span> data</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># defining the group that will be dropped with some high probability</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>grp <span class="ot">&lt;-</span> ((data_real<span class="sc">$</span>w <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">&amp;</span>  <span class="co"># if treated AND...</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        (</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>age <span class="sc">&gt;</span> <span class="dv">45</span>) <span class="sc">|</span>     <span class="co"># belongs an older group OR</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>polviews <span class="sc">&lt;</span> <span class="dv">5</span>)   <span class="co"># more conservative</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        )) <span class="sc">|</span> <span class="co"># OR</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        ((data_real<span class="sc">$</span>w <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">&amp;</span>  <span class="co"># if untreated AND...</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        (</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>age <span class="sc">&lt;</span> <span class="dv">45</span>) <span class="sc">|</span>     <span class="co"># belongs a younger group OR</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>            (data_real<span class="sc">$</span>polviews <span class="sc">&gt;</span> <span class="dv">4</span>)   <span class="co"># more liberal</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        )) </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Individuals in the group above have a smaller chance of being kept in the sample</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>prob.keep <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(grp, .<span class="dv">15</span>, .<span class="dv">85</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>keep.idx <span class="ot">&lt;-</span> <span class="fu">as.logical</span>(<span class="fu">rbinom</span>(<span class="at">n=</span><span class="fu">nrow</span>(data_real), <span class="at">prob=</span>prob.keep, <span class="at">size =</span> <span class="dv">1</span>))</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Dropping</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>data_real <span class="ot">&lt;-</span> data_real[keep.idx,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_real,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> age <span class="sc">+</span><span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">sum</span>(<span class="at">W=</span>w),<span class="at">sd=</span>.<span class="dv">1</span>),</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y=</span>polviews<span class="sc">+</span><span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">sum</span>(<span class="at">W=</span>w),<span class="at">sd=</span>.<span class="dv">1</span>))) <span class="sc">+</span> </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">2</span>,<span class="at">color=</span><span class="st">'#0085A1'</span>,<span class="at">alpha=</span><span class="fl">0.3</span>) <span class="sc">+</span> </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">vars</span>(<span class="fu">ifelse</span>(w,<span class="st">'Controllo'</span>,<span class="st">'Trattamento'</span>))</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Distribuzione dell'outcome in un contesto reale"</span>,</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">x=</span><span class="st">"Età"</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">y=</span><span class="st">"Orientamento politico"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data_real,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> age <span class="sc">+</span><span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">sum</span>(<span class="at">W=</span>w),<span class="at">sd=</span>.<span class="dv">1</span>),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y=</span>polviews<span class="sc">+</span><span class="fu">rnorm</span>(<span class="at">n=</span><span class="fu">sum</span>(<span class="at">W=</span>w),<span class="at">sd=</span>.<span class="dv">1</span>))) <span class="sc">+</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">2</span>,<span class="at">color=</span><span class="st">'#0085A1'</span>,<span class="at">alpha=</span><span class="fl">0.3</span>) <span class="sc">+</span> </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">vars</span>(<span class="fu">ifelse</span>(w,<span class="st">'Control'</span>,<span class="st">'Treatment'</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Outcome distribution in a real scenario"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">x=</span><span class="st">"Age"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">y=</span><span class="st">"Political view"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in age + rnorm(n = sum(W = w), sd = 0.1): longer object length is not a
+multiple of shorter object length</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in polviews + rnorm(n = sum(W = w), sd = 0.1): longer object length is
+not a multiple of shorter object length</code></pre>
+</div>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
@@ -302,9 +319,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> data[,outcome]</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>W <span class="ot">&lt;-</span> data[,treatment]</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(Y[W<span class="sc">==</span><span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> data[,outcome]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>W <span class="ot">&lt;-</span> data[,treatment]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(Y[W<span class="sc">==</span><span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.09211436</code></pre>
@@ -317,7 +334,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(Y[W<span class="sc">==</span><span class="dv">0</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">mean</span>(Y[W<span class="sc">==</span><span class="dv">0</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.438129</code></pre>
@@ -326,9 +343,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fmla <span class="ot">&lt;-</span> <span class="fu">formula</span>(<span class="fu">paste0</span>(outcome, <span class="st">'~'</span>, treatment))</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ols <span class="ot">&lt;-</span> <span class="fu">lm</span>(fmla, <span class="at">data=</span>data)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(ols, <span class="at">vcov=</span><span class="fu">vcovHC</span>(ols, <span class="at">type=</span><span class="st">'HC2'</span>))[<span class="dv">2</span>,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fmla <span class="ot">&lt;-</span> <span class="fu">formula</span>(<span class="fu">paste0</span>(outcome, <span class="st">'~'</span>, treatment))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>ols <span class="ot">&lt;-</span> <span class="fu">lm</span>(fmla, <span class="at">data=</span>data)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(ols, <span class="at">vcov=</span><span class="fu">vcovHC</span>(ols, <span class="at">type=</span><span class="st">'HC2'</span>))[<span class="dv">2</span>,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     Estimate    Std. Error       t value      Pr(&gt;|t|) 
@@ -406,32 +423,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li>Quando la propensione al trattamento è molto piccola, i pesi diventano molto grandi, rendendo lo stimatore instabile e con alta varianza.</li>
 </ul>
-<!-- -->
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">ipw_estimators</span>(</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data_real,</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimation_method =</span> <span class="st">'IPW'</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> outcome,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> treatment,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">covariates =</span> covariates,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_specification =</span> <span class="st">'linear'</span>,</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="cn">FALSE</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">ipw_estimators</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data_real,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimation_method =</span> <span class="st">'IPW'</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> outcome,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> treatment,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">covariates =</span> covariates,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_specification =</span> <span class="st">'linear'</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-Formula:
-w ~ age+polviews+income+educ+marital+sex
+<pre><code>Generated formula:
+ w ~age+polviews+income+educ+marital+sex 
 
 Difference-in-means estimation (benchmark):
       Estimate     Std. Error        t value       Pr(&gt;|t|) 
- -3.035443e-01   8.524914e-03  -3.560673e+01  4.665325e-260 
+ -2.993030e-01   8.587463e-03  -3.485349e+01  9.269392e-250 
 
-IPW estimation:
+ IPW estimation:
       Estimate      Std Error        t value       Pr(&gt;|t|) 
- -3.376407e-01   1.272963e-02  -2.652400e+01  1.067566e-143 </code></pre>
+ -3.361816e-01   1.300637e-02  -2.584746e+01  2.754942e-136 </code></pre>
 </div>
 </div>
 <ul>
@@ -460,34 +475,43 @@ IPW estimation:
 <p>Svantaggi:</p>
 <ul>
 <li>Richiede la stima di due modelli (outcome e propensity score), il che può essere impegnativo in pratica.</li>
-<li>Quando i propensity score sono molto vicini a 0 o 1, l’AIPW può avere prestazioni instabili. In tal caso, altri stimatori come l’approximate residual balancing (ARB) possono essere preferibili.</li>
+<li>Quando i propensity score sono molto vicini a 0 o 1, l’AIPW può avere prestazioni instabili.</li>
 </ul>
 <p>In sintesi, l’AIPW è uno stimatore raccomandato in contesti osservazionali con ipotesi di non confondimento e overlapping, grazie alla sua doppia robustezza e efficienza asintotica. La sua implementazione può però risultare più complessa rispetto ad altri stimatori.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ipw_estimators</span>(</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data_real,</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimation_method =</span> <span class="st">'AIPW'</span>,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> outcome,</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> treatment,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">covariates =</span> covariates,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_specification =</span> <span class="st">'linear'</span>,</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="cn">FALSE</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">ipw_estimators</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data_real,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimation_method =</span> <span class="st">'AIPW'</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> outcome,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> treatment,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">covariates =</span> covariates,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_specification =</span> <span class="st">'linear'</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">target.sample =</span> <span class="st">"control"</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-Formula:
-w ~ age+polviews+income+educ+marital+sex
+<pre><code>Generated formula:
+ w ~age+polviews+income+educ+marital+sex 
 
 Difference-in-means estimation (benchmark):
       Estimate     Std. Error        t value       Pr(&gt;|t|) 
- -3.035443e-01   8.524914e-03  -3.560673e+01  4.665325e-260 
+ -2.993030e-01   8.587463e-03  -3.485349e+01  9.269392e-250 
 
-AIPW estimation:
-    Estimate    Std Error      t value     Pr(&gt;|t|) 
- -0.34814294   0.01233899 -28.21486025   0.00000000 </code></pre>
+ AIPW estimation:</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in (function (forest, target.sample = c("all", "treated", "control", :
+Estimated treatment propensities take values between 0.049 and 0.983 and in
+particular get very close to 0 and 1. In this case, using
+`target.sample=overlap`, or filtering data as in Crump, Hotz, Imbens, and
+Mitnik (Biometrika, 2009) may be helpful.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Estimate    Std Error      t value     Pr(&gt;|t|) 
+ -0.33058051   0.01024561 -32.26556535   0.00000000 </code></pre>
 </div>
 </div>
 </section>
@@ -499,61 +523,48 @@ AIPW estimation:
 <p><span id="eq-asmd"><span class="math display">\[\frac{|\bar{Z}_1 - \bar{Z}_0|}{\sqrt{s_1^2 + s_0^2}} \tag{8}\]</span></span></p>
 <p>dove <span class="math inline">\(\bar{Z}_1\)</span> e <span class="math inline">\(\bar{Z}_0\)</span> sono le medie campionarie di <span class="math inline">\(Z_i\)</span>, e <span class="math inline">\(s_1\)</span> e <span class="math inline">\(s_0\)</span> sono le deviazioni standard di <span class="math inline">\(Z_i\)</span> per i due campioni di individui trattati e non trattati. Successivamente, possiamo verificare la stessa quantità per le loro controparti ponderate <span class="math inline">\(Z_i W_i/\hat{e}(X_i)\)</span> e <span class="math inline">\(Z_i (1-W_i)/(1-\hat{e}(X_i))\)</span>.</p>
 <p>Se le nostre propensioni sono ben calibrate, l’ASMD per la versione ponderata dovrebbe essere vicina allo zero.</p>
-<section id="aipw-weights" class="level3">
-<h3 class="anchored" data-anchor-id="aipw-weights">AIPW weights</h3>
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">ipw_estimators</span>(</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data_real,</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimation_method =</span> <span class="st">'AIPW'</span>,</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> outcome,</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> treatment,</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">covariates =</span> covariates,</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_specification =</span> <span class="st">'interaction'</span>,</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="cn">TRUE</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">ipw_estimators</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data_real,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimation_method =</span> <span class="st">'AIPW'</span>,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">outcome =</span> outcome,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">treatment =</span> treatment,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">covariates =</span> covariates,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_specification =</span> <span class="st">'linear'</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">target.sample =</span> <span class="st">"control"</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-Formula:
-w ~ 0 + age*age+polviews*age+income*age+educ*age+marital*age+sex*age+age*polviews+polviews*polviews+income*polviews+educ*polviews+marital*polviews+sex*polviews+age*income+polviews*income+income*income+educ*income+marital*income+sex*income+age*educ+polviews*educ+income*educ+educ*educ+marital*educ+sex*educ+age*marital+polviews*marital+income*marital+educ*marital+marital*marital+sex*marital+age*sex+polviews*sex+income*sex+educ*sex+marital*sex+sex*sex
+<pre><code>Generated formula:
+ w ~age+polviews+income+educ+marital+sex 
 
 Difference-in-means estimation (benchmark):
       Estimate     Std. Error        t value       Pr(&gt;|t|) 
- -3.035443e-01   8.524914e-03  -3.560673e+01  4.665325e-260 
+ -2.993030e-01   8.587463e-03  -3.485349e+01  9.269392e-250 
 
-AIPW estimation:
+ AIPW estimation:
     Estimate    Std Error      t value     Pr(&gt;|t|) 
- -0.35698273   0.01221851 -29.21655871   0.00000000 </code></pre>
+ -0.33342985   0.01042831 -31.97354219   0.00000000 </code></pre>
 </div>
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>bal <span class="ot">&lt;-</span> <span class="fu">aipw_balancer</span>(</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>model_spec_matrix,</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>treatment_variable,</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>e_hat</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cov_bal_plot</span>(results<span class="sc">$</span>model_spec_matrix,</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>             bal<span class="sc">$</span>unadjusted_cov,</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>             bal<span class="sc">$</span>adjusted_cov)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>bal <span class="ot">&lt;-</span> <span class="fu">aipw_balancer</span>(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>model_spec_matrix,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>treatment_variable,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>e_hat</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cov_bal_plot</span>(results<span class="sc">$</span>model_spec_matrix,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>             bal<span class="sc">$</span>unadjusted_cov,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>             bal<span class="sc">$</span>adjusted_cov)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">prop_plot</span>(</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>e_hat,</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  results<span class="sc">$</span>treatment_variable</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid" width="672"></p>
 </div>
-</div>
-</section>
 </section>
 
 

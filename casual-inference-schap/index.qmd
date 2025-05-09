@@ -6,14 +6,7 @@ date: "2024-10-28"
 categories: [casual inference, R]
 image: loop.gif
 code-fold: true
-knitr:
-  opts_knit:
-    root.dir: '../causalwiz'
 ---
-
-```{r, include = FALSE}
-source("main.R")
-```
 
 ## HTE
 
